@@ -1,0 +1,45 @@
+version: '3.8'
+services:
+  pg:
+    image: postgres:14.1-alpine
+    restart: always
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    ports:
+      - '5432:5432'
+    volumes: 
+      - pg:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 25s
+      retries: 3
+  mongo:
+    image: mongo:4.2.0
+    restart: always
+    volumes:
+      - mongo_data:/data/db
+    ports:
+      - '27017:27017'
+  redis:
+    image: "redis/redis-stack:edge"
+    ports:
+      - "6379:6379"
+    environment:
+      - "REDIS_ARGS=--appendonly yes"
+    volumes:
+      - cache:/data
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+volumes:
+  pg:
+    driver: local
+  redis:
+    driver: local 
+  mongo_data:
+    driver: local
+  cache:
+    driver: local
